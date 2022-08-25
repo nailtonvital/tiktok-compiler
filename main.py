@@ -1,4 +1,3 @@
-from bs4 import BeautifulSoup
 import requests
 import json
 import re
@@ -28,11 +27,23 @@ def get_links(text):
     for link in reddit_links:
         os.system(f'youtube-dl -o "./results/temp/%(title)s.%(ext)s" {link}')
 
-def txt():
+def blur():
     path_of_the_directory = './results/temp/'
     ext = (".mp4")
+    count = 0
+    for files in os.listdir(path_of_the_directory):
+        if files.endswith(ext):
+            count = count+1
+            command = f'ffmpeg -i ./results/temp/{files} -lavfi "[0:v]scale=ih*16/9:-1,boxblur=luma_radius=min(h\,w)/20:luma_power=1:chroma_radius=min(cw\,ch)/20:chroma_power=1[bg];[bg][0:v]overlay=(W-w)/2:(H-h)/2,crop=h=iw*9/16" -vb 800K ./results/temp/blur/{count}-blur.mp4'
+            os.system(command)
+        else:
+            continue
 
-    with open('./results/temp/videolist.txt', 'w') as f:
+def txt():
+    path_of_the_directory = "./results/temp/blur/"
+    ext = (".mp4")
+
+    with open(path_of_the_directory + 'videolist.txt', 'w') as f:
         for files in os.listdir(path_of_the_directory):
             if files.endswith(ext):
                 f.write(f"file '{files}'\n")
@@ -41,7 +52,7 @@ def txt():
                 continue
 
 def concat(name):
-    os.system(f'ffmpeg -f concat -safe 0 -i "./results/temp/videolist.txt" -c copy "./results/final/{name}.mp4"')
+    os.system(f'ffmpeg -f concat -safe 0 -i "./results/temp/blur/videolist.txt" -c copy "./results/final/{name}.mp4"')
     print("Successful video merge")
 
 def delete():
@@ -55,7 +66,7 @@ def make_video():
     print(links)
     get_links(links)
     txt()
-    concat(name)
-    delete()
+    # concat(name)
+    # delete()
 
-make_video()
+concat("teste-blur")
